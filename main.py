@@ -11,7 +11,7 @@ from flask import Flask
 
 # 🔑 مفاتيح API من متغيرات البيئة
 BOT_TOKEN = os.environ.get('BOT_TOKEN', '8142771350:AAHG7ZNBsi61XmmMIEspCKnEgfX3gqczhSo')
-GROQ_API_KEY = os.environ.get('GROQ_API_KEY', 'YOUR_GROQ_API_KEY_HERE')
+GROQ_API_KEY = os.environ.get('GROQ_API_KEY', 'AAHG7ZNBsi61XmmMIEspCKnEgfX3gqczhSo')
 
 # 🔧 إعداد الذكاء الاصطناعي
 client = Groq(api_key=GROQ_API_KEY) if GROQ_API_KEY != 'YOUR_GROQ_API_KEY_HERE' else None
