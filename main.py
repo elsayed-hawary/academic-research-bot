@@ -1,7 +1,7 @@
 import os
 import logging
 import sqlite3
-import asyncio
+import threading
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, MessageHandler, filters, ContextTypes
 from docx import Document
@@ -16,12 +16,16 @@ GROQ_API_KEY = os.environ.get('GROQ_API_KEY', 'AAHG7ZNBsi61XmmMIEspCKnEgfX3gqczh
 # 🔧 إعداد الذكاء الاصطناعي
 client = Groq(api_key=GROQ_API_KEY) if GROQ_API_KEY != 'YOUR_GROQ_API_KEY_HERE' else None
 
-# إعداد Flask للحفاظ على التشغيل
+# 🔥 إعداد Flask - هذا هو التصحيح الرئيسي
 app = Flask(__name__)
 
 @app.route('/')
 def home():
-    return "🤖 Academic Research Bot is Running!"
+    return "🤖 Academic Research Bot is Running on Render!"
+
+@app.route('/health')
+def health():
+    return "✅ Bot is healthy and running!"
 
 # إعداد التسجيل
 logging.basicConfig(
@@ -66,7 +70,7 @@ TEXTS = {
 
 # قاعدة البيانات
 def init_database():
-    conn = sqlite3.connect('research_bot.db')
+    conn = sqlite3.connect('/tmp/research_bot.db')  # استخدام /tmp في Render
     cursor = conn.cursor()
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS users (
@@ -92,7 +96,7 @@ def init_database():
 init_database()
 
 def save_user_language(user_id, language):
-    conn = sqlite3.connect('research_bot.db')
+    conn = sqlite3.connect('/tmp/research_bot.db')
     cursor = conn.cursor()
     cursor.execute('''
         INSERT OR REPLACE INTO users (user_id, language) 
@@ -118,14 +122,7 @@ async def generate_ai_content(title, description, language, pages):
         الوصف: {description}
         عدد الصفحات التقريبي: {pages}
         
-        أرجو كتابة بحث أكاديمي متكامل مع:
-        - مقدمة
-        - إطار نظري
-        - منهجية
-        - نتائج
-        - خاتمة وتوصيات
-        
-        المحتوى يجب أن يكون احترافياً وأكاديمياً.
+        أرجو كتابة بحث أكاديمي متكامل.
         """
     elif language == 'ru':
         prompt = f"""
@@ -135,14 +132,7 @@ async def generate_ai_content(title, description, language, pages):
         Описание: {description}
         Примерное количество страниц: {pages}
         
-        Пожалуйста, напишите комплексное академическое исследование включающее:
-        - Введение
-        - Теоретическую основу
-        - Методологию
-        - Результаты
-        - Заключение и рекомендации
-        
-        Содержание должно быть профессиональным и академическим.
+        Пожалуйста, напишите комплексное академическое исследование.
         """
     else:
         prompt = f"""
@@ -152,14 +142,7 @@ async def generate_ai_content(title, description, language, pages):
         Description: {description}
         Approximate pages: {pages}
         
-        Please write a comprehensive academic research paper including:
-        - Introduction
-        - Theoretical Framework
-        - Methodology
-        - Results
-        - Conclusion and Recommendations
-        
-        The content should be professional and academic.
+        Please write a comprehensive academic research paper.
         """
     
     try:
@@ -181,81 +164,70 @@ def generate_fallback_content(title, description, language, pages):
     if language == 'ar':
         return f"""
         المقدمة:
-        يمثل موضوع "{title}" أهمية بالغة في المجال الأكاديمي المعاصر. {description}
+        يمثل موضوع "{title}" أهمية بالغة في المجال الأكاديمي. {description}
         
         الإطار النظري:
-        يستند هذا البحث إلى مجموعة من النظريات والأطر المفاهيمية الراسخة في الأدبيات الأكاديمية، مما يساهم في تقديم فهم أعمق وأشمل للموضوع المطروح.
+        يستند هذا البحث إلى مجموعة من النظريات والأطر المفاهيمية.
         
         المنهجية:
-        اعتمد البحث على المنهج الوصفي التحليلي، مع استخدام أدوات جمع البيانات المناسبة التي تضمن الحصول على معلومات دقيقة وموثوقة.
+        اعتمد البحث على المنهج الوصفي التحليلي.
         
         النتائج:
-        توصل البحث إلى مجموعة من النتائج المهمة التي تساهم في إثراء المعرفة حول الموضوع، وتقدم إضافات نوعية للمجال المعرفي.
+        توصل البحث إلى نتائج مهمة تساهم في إثراء المعرفة.
         
-        الخاتمة والتوصيات:
-        ختم البحث بمجموعة من التوصيات العملية التي يمكن تطبيقها في هذا المجال، مع اقتراحات لبحوث مستقبلية.
+        الخاتمة:
+        ختم البحث بمجموعة من التوصيات العملية.
         """
     elif language == 'ru':
         return f"""
         Введение:
-        Тема "{title}" представляет большую важность в современной академической сфере. {description}
+        Тема "{title}" представляет большую важность в академической сфере. {description}
         
         Теоретическая основа:
-        Это исследование основано на ряде теорий и концептуальных框架, устоявшихся в академической литературе, что способствует более глубокому и всестороннему пониманию рассматриваемой темы.
+        Это исследование основано на ряде теорий и концептуальных框架.
         
         Методология:
-        Исследование использовало описательно-аналитический метод с применением соответствующих инструментов сбора данных, обеспечивающих получение точной и надежной информации.
+        Исследование использовало описательно-аналитический метод.
         
         Результаты:
-        Исследование пришло к ряду важных выводов, которые обогащают знания по теме и вносят качественный вклад в область знаний.
+        Исследование пришло к важным выводам.
         
-        Заключение и рекомендации:
-        Исследование завершается рядом практических рекомендаций, которые могут быть применены в этой области, с предложениями для будущих исследований.
+        Заключение:
+        Исследование завершается рядом практических рекомендаций.
         """
     else:
         return f"""
         Introduction:
-        The topic of "{title}" is of great importance in the contemporary academic field. {description}
+        The topic of "{title}" is of great importance. {description}
         
         Theoretical Framework:
-        This research is based on a set of well-established theories and conceptual frameworks in academic literature, contributing to a deeper and more comprehensive understanding of the subject.
+        This research is based on a set of theories.
         
         Methodology:
-        The research adopted the descriptive analytical approach, using appropriate data collection tools that ensure accurate and reliable information.
+        The research adopted descriptive analytical approach.
         
         Results:
-        The research reached a set of important results that contribute to enriching knowledge about the topic and provide qualitative additions to the field of knowledge.
+        The research reached important results.
         
-        Conclusion and Recommendations:
-        The research concluded with a set of practical recommendations that can be applied in this field, along with suggestions for future research.
+        Conclusion:
+        The research concluded with practical recommendations.
         """
 
 def create_word_document(content, title, language):
     """إنشاء مستند Word"""
     doc = Document()
+    doc.add_heading(title, 0)
     
-    # إضافة العنوان الرئيسي
-    title_heading = doc.add_heading(title, 0)
-    
-    # إضافة تاريخ الإنشاء
-    doc.add_paragraph(f"تاريخ الإنشاء: {datetime.now().strftime('%Y-%m-%d %H:%M')}")
-    doc.add_paragraph()  # سطر فارغ
-    
-    # معالجة المحتوى
-    sections = content.split('\n\n')
-    for section in sections:
+    for section in content.split('\n\n'):
         if section.strip():
             if ':' in section:
                 section_title, section_content = section.split(':', 1)
-                # إضافة عنوان القسم
                 doc.add_heading(section_title.strip(), level=1)
-                # إضافة محتوى القسم
                 doc.add_paragraph(section_content.strip())
             else:
                 doc.add_paragraph(section.strip())
-            doc.add_paragraph()  # سطر فارغ بين الأقسام
     
-    filename = f"research_{datetime.now().strftime('%Y%m%d_%H%M%S')}.docx"
+    filename = f"/tmp/research_{datetime.now().strftime('%Y%m%d_%H%M%S')}.docx"
     doc.save(filename)
     return filename
 
@@ -345,17 +317,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         reply_markup = InlineKeyboardMarkup(keyboard)
         
         await query.edit_message_text(
-            text="✅ تم إدخال جميع البيانات!\n\n"
-                 "العنوان: {}\n"
-                 "الوصف: {}\n"
-                 "الصفحات: {}\n"
-                 "لغة البحث: {}\n\n"
-                 "جاهز لتوليد البحث 📝".format(
-                     user_data.get('research_title', 'N/A'),
-                     user_data.get('research_description', 'N/A')[:100] + "...",
-                     user_data.get('page_count', 'N/A'),
-                     research_lang
-                 ),
+            text="✅ تم إدخال جميع البيانات جاهز لتوليد البحث",
             reply_markup=reply_markup
         )
     
@@ -372,7 +334,6 @@ async def generate_research(query, context):
     
     await query.edit_message_text(texts['generating'])
     
-    # توليد المحتوى باستخدام الذكاء الاصطناعي
     content = await generate_ai_content(
         user_data.get('research_title', 'بحث أكاديمي'),
         user_data.get('research_description', 'وصف البحث'),
@@ -380,32 +341,28 @@ async def generate_research(query, context):
         user_data.get('page_count', 5)
     )
     
-    # إنشاء ملف Word
     filename = create_word_document(
         content,
         user_data.get('research_title', 'بحث أكاديمي'),
         user_data.get('research_language', 'ar')
     )
     
-    # إرسال الملف
     with open(filename, 'rb') as file:
         await context.bot.send_document(
             chat_id=query.message.chat_id,
             document=file,
-            caption=texts['completed'] + "\n\n" + user_data.get('research_title', 'بحث أكاديمي')
+            caption=texts['completed']
         )
     
-    # تنظيف الملف
     import os
     os.remove(filename)
     
-    # عرض خيار البدء من جديد
     keyboard = [[InlineKeyboardButton("🔄 إنشاء بحث جديد", callback_data="restart")]]
     reply_markup = InlineKeyboardMarkup(keyboard)
     
     await context.bot.send_message(
         chat_id=query.message.chat_id,
-        text="🎉 تم الانتهاء بنجاح! هل تريد إنشاء بحث جديد؟",
+        text="🎉 هل تريد إنشاء بحث جديد؟",
         reply_markup=reply_markup
     )
 
@@ -421,39 +378,35 @@ async def start_from_beginning(query, context):
     reply_markup = InlineKeyboardMarkup(keyboard)
     
     await query.edit_message_text(
-        "اختر لغة الواجهة / Choose interface language / Выберите язык интерфейса:",
+        "اختر لغة الواجهة:",
         reply_markup=reply_markup
     )
 
 def run_bot():
-    """تشغيل بوت التلجرام"""
-    application = Application.builder().token(BOT_TOKEN).build()
-    
-    # إضافة المعالجات
-    application.add_handler(CommandHandler("start", start))
-    application.add_handler(CallbackQueryHandler(button_handler))
-    application.add_handler(CallbackQueryHandler(language_handler, pattern="^lang_"))
-    application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
-    
-    logger.info("🤖 البوت يعمل الآن على Render!")
-    application.run_polling()
+    """تشغيل بوت التلجرام في thread منفصل"""
+    try:
+        application = Application.builder().token(BOT_TOKEN).build()
+        
+        application.add_handler(CommandHandler("start", start))
+        application.add_handler(CallbackQueryHandler(button_handler))
+        application.add_handler(CallbackQueryHandler(language_handler, pattern="^lang_"))
+        application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
+        
+        logger.info("🤖 البوت يعمل الآن على Render!")
+        application.run_polling()
+    except Exception as e:
+        logger.error(f"Error in bot: {e}")
 
 def run_flask():
-    """تشغيل خادم Flask"""
+    """تشغيل Flask"""
     port = int(os.environ.get('PORT', 10000))
     app.run(host='0.0.0.0', port=port)
 
-async def main():
-    """الدالة الرئيسية"""
-    # تشغيل البوت في خلفية
-    import threading
+if __name__ == '__main__':
+    # تشغيل البوت في thread منفصل
     bot_thread = threading.Thread(target=run_bot)
     bot_thread.daemon = True
     bot_thread.start()
     
-    # تشغيل Flask في المقدمة
+    # تشغيل Flask في thread الرئيسي
     run_flask()
-
-if __name__ == '__main__':
-    # للتشغيل المحلي
-    run_bot()
