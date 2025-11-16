@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: academic-research-bot
+    env: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: python main.py
+    envVars:
+      - key: BOT_TOKEN
+        value: 8142771350:AAHG7ZNBsi61XmmMIEspCKnEgfX3gqczhSo
+      - key: GROQ_API_KEY
+        value: YOUR_GROQ_API_KEY_HERE
