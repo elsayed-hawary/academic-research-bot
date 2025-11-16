@@ -1,5 +1,2 @@
 python-telegram-bot==20.7
 python-docx==0.8.11
-groq==0.3.0
-flask==2.3.3
-gunicorn==21.2.0
