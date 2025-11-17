@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Анализ рынка электроники в Екатеринбурге</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+            color: #333;
+            overflow-x: hidden;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .container {
+            max-width: 1000px;
+            width: 100%;
+        }
+        
+        .presentation {
+            background-color: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .slides-container {
+            position: relative;
+            height: 500px;
+            overflow: hidden;
+        }
+        
+        .slides {
+            display: flex;
+            transition: transform 0.5s ease-in-out;
+            height: 100%;
+        }
+        
+        .slide {
+            min-width: 100%;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+        
+        .slide-header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #1a2a6c;
+        }
+        
+        .slide-title {
+            font-size: 2rem;
+            color: #1a2a6c;
+            margin-bottom: 10px;
+        }
+        
+        .slide-subtitle {
+            font-size: 1.1rem;
+            color: #b21f1f;
+            font-weight: 500;
+        }
+        
+        .slide-content {
+            font-size: 1rem;
+            line-height: 1.5;
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 10px 5px;
+        }
+        
+        .stats-container {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            margin: 15px 0;
+            gap: 10px;
+        }
+        
+        .stat-item {
+            background: linear-gradient(135deg, #1a2a6c, #4a5fc1);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            width: 150px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+        }
+        
+        .segment-card {
+            background-color: #f8f9fa;
+            border-left: 5px solid #1a2a6c;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        
+        .segment-title {
+            font-size: 1.2rem;
+            color: #1a2a6c;
+            margin-bottom: 8px;
+        }
+        
+        .factors-list {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        
+        .factors-list li {
+            padding: 8px 0;
+            border-bottom: 1px dashed #ddd;
+            position: relative;
+            padding-left: 25px;
+        }
+        
+        .factors-list li:before {
+            content: "•";
+            color: #b21f1f;
+            font-size: 1.2rem;
+            position: absolute;
+            left: 0;
+            top: 5px;
+        }
+        
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            padding: 15px 20px;
+            background-color: rgba(26, 42, 108, 0.9);
+        }
+        
+        .nav-btn {
+            background: linear-gradient(135deg, #fdbb2d, #b21f1f);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .nav-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        .progress-bar {
+            height: 6px;
+            background-color: #e9ecef;
+            border-radius: 3px;
+            margin: 15px 20px 0;
+            overflow: hidden;
+        }
+        
+        .progress {
+            height: 100%;
+            background: linear-gradient(90deg, #1a2a6c, #b21f1f, #fdbb2d);
+            width: 14.28%;
+            transition: width 0.3s;
+        }
+        
+        .slide-counter {
+            text-align: center;
+            color: white;
+            font-weight: 600;
+            margin-top: 5px;
+        }
+        
+        @media (max-width: 768px) {
+            .slide {
+                padding: 20px;
+            }
+            
+            .slide-title {
+                font-size: 1.6rem;
+            }
+            
+            .stats-container {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .stat-item {
+                width: 90%;
+            }
+            
+            .slides-container {
+                height: 450px;
+            }
+        }
+        
+        .chart-container {
+            height: 200px;
+            margin: 15px 0;
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            border-radius: 10px;
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-around;
+            padding: 15px;
+        }
+        
+        .chart-bar {
+            background: linear-gradient(to top, #1a2a6c, #4a5fc1);
+            width: 50px;
+            border-radius: 5px 5px 0 0;
+            position: relative;
+        }
+        
+        .chart-label {
+            position: absolute;
+            bottom: -25px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            font-size: 0.8rem;
+            color: #333;
+        }
+        
+        .chart-value {
+            position: absolute;
+            top: -20px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            font-weight: bold;
+            color: #1a2a6c;
+            font-size: 0.9rem;
+        }
+        
+        .highlight {
+            background-color: #fff9e6;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            border-left: 3px solid #fdbb2d;
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.8s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="presentation">
+            <div class="progress-bar">
+                <div class="progress" id="progress"></div>
+            </div>
+            
+            <div class="slides-container">
+                <div class="slides" id="slides">
+                    <!-- Слайд 1: Титульный -->
+                    <div class="slide fade-in">
+                        <div class="slide-header">
+                            <h1 class="slide-title">Анализ потребительских привычек на рынке электроники в Екатеринбурге</h1>
+                            <p class="slide-subtitle">Исследование рынка, сегментация потребителей и тренды</p>
+                        </div>
+                        <div class="slide-content" style="text-align: center;">
+                            <p>Выполнили: Группа маркетинговых исследований</p>
+                            <p>Екатеринбург, 2024</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Слайд 2: Характеристика рынка -->
+                    <div class="slide">
+                        <div class="slide-header">
+                            <h2 class="slide-title">Характеристика рынка электроники в Екатеринбурге</h2>
+                            <p class="slide-subtitle">По данным на 2023-2024 годы</p>
+                        </div>
+                        <div class="slide-content">
+                            <p>Рынок электроники в Екатеринбурге растет, несмотря на экономические проблемы.</p>
+                            
+                            <div class="stats-container">
+                                <div class="stat-item">
+                                    <div class="stat-value">42 млрд ₽</div>
+                                    <div class="stat-label">Объем рынка в 2023 г.</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-value">+8.5%</div>
+                                    <div class="stat-label">Рост к 2022 году</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-value">350+</div>
+                                    <div class="stat-label">Магазинов электроники</div>
+                                </div>
+                            </div>
+                            
+                            <div class="highlight">
+                                <p>Главные игроки: DNS, М.Видео, Эльдорадо, Citilink, а также интернет-магазины.</p>
+                            </div>
+                            
+                            <p>Уровень конкуренции: высокий, магазины конкурируют ценами и сервисом.</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Слайд 3: Сегменты потребителей -->
+                    <div class="slide">
+                        <div class="slide-header">
+                            <h2 class="slide-title">Сегменты потребителей электроники</h2>
+                            <p class="slide-subtitle">Основные группы покупателей</p>
+                        </div>
+                        <div class="slide-content">
+                            <div class="segment-card">
+                                <h3 class="segment-title">Студенты и молодежь (18-25 лет)</h3>
+                                <p>Покупают: смартфоны, ноутбуки, наушники. Важна цена, используют рассрочку, читают отзывы в соцсетях.</p>
+                            </div>
+                            
+                            <div class="segment-card">
+                                <h3 class="segment-title">Работающие люди (26-45 лет)</h3>
+                                <p>Покупают технику для работы и дома: ноутбуки, смартфоны, умные устройства. Ценят качество и бренд.</p>
+                            </div>
+                            
+                            <div class="segment-card">
+                                <h3 class="segment-title">Семьи с детьми (30-50 лет)</h3>
+                                <p>Покупают: бытовую технику, телевизоры, планшеты. Нужна надежность и безопасность.</p>
+                            </div>
+                            
+                            <div class="segment-card">
+                                <h3 class="segment-title">Любители технологий (18-40 лет)</h3>
+                                <p>Покупают новинки: игровые приставки, VR-устройства, умные гаджеты. Следят за трендами.</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Слайд 4: Внешние факторы -->
+                    <div class="slide">
+                        <div class="slide-header">
+                            <h2 class="slide-title">Внешние факторы, влияющие на потребителей</h2>
+                            <p class="slide-subtitle">Экономические, технологические и социальные аспекты</p>
+                        </div>
+                        <div class="slide-content">
+                            <ul class="factors-list">
+                                <li><strong>Экономическая ситуация:</strong> Рост цен заставляет покупать меньше или использовать кредиты.</li>
+                                <li><strong>Технологические изменения:</strong> Техника быстро устаревает, поэтому люди часто меняют устройства.</li>
+                                <li><strong>Импортозамещение:</strong> Появление российских брендов электроники.</li>
+                                <li><strong>Цифровизация:</strong> Более 60% покупают электронику онлайн.</li>
+                                <li><strong>Экология:</strong> Растет спрос на энергоэффективные устройства.</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <!-- Слайд 5: Особенности покупательского поведения -->
+                    <div class="slide">
+                        <div class="slide-header">
+                            <h2 class="slide-title">Особенности покупательского поведения</h2>
+                            <p class="slide-subtitle">Как покупают электронику</p>
+                        </div>
+                        <div class="slide-content">
+                            <div class="chart-container" id="behaviorChart">
+                                <!-- График будет создан через JavaScript -->
+                            </div>
+                            
+                            <ul class="factors-list">
+                                <li><strong>Долго выбирают:</strong> Сравнивают характеристики, читают отзывы.</li>
+                                <li><strong>Используют интернет:</strong> 85% изучают товары онлайн перед покупкой.</li>
+                                <li><strong>Любят скидки:</strong> Распродажи значительно увеличивают продажи.</li>
+                                <li><strong>Важна гарантия:</strong> Наличие сервисных центров влияет на выбор.</li>
+                                <li><strong>Смотрят в магазине, покупают онлайн:</strong> Сочетают онлайн и офлайн.</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <!-- Слайд 6: Оценка маркетинговой деятельности -->
+                    <div class="slide">
+                        <div class="slide-header">
+                            <h2 class="slide-title">Оценка маркетинга брендов электроники</h2>
+                            <p class="slide-subtitle">Что делают хорошо и что можно улучшить</p>
+                        </div>
+                        <div class="slide-content">
+                            <div class="stats-container">
+                                <div class="stat-item">
+                                    <div class="stat-value">7/10</div>
+                                    <div class="stat-label">Цены и акции</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-value">5/10</div>
+                                    <div class="stat-label">Персональный подход</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-value">8/10</div>
+                                    <div class="stat-label">Онлайн-присутствие</div>
+                                </div>
+                            </div>
+                            
+                            <p><strong>Сильные стороны:</strong></p>
+                            <ul class="factors-list">
+                                <li>Активно используют соцсети и интернет-рекламу</li>
+                                <li>Программы лояльности и бонусы</li>
+                                <li>Эффектные акции и распродажи</li>
+                            </ul>
+                            
+                            <p><strong>Слабые стороны:</strong></p>
+                            <ul class="factors-list">
+                                <li>Мало персонализированных предложений</li>
+                                <li>Недостаточно обучают использованию техники</li>
+                                <li>Мало сервисных центров в отдаленных районах</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <!-- Слайд 7: Долгосрочные тренды -->
+                    <div class="slide">
+                        <div class="slide-header">
+                            <h2 class="slide-title">Будущие тренды покупательского поведения</h2>
+                            <p class="slide-subtitle">Прогноз до 2027 года</p>
+                        </div>
+                        <div class="slide-content">
+                            <div class="segment-card">
+                                <h3 class="segment-title">Рост онлайн-покупок</h3>
+                                <p>К 2027 году 75% покупок электроники будет онлайн. Приложения станут главным каналом.</p>
+                            </div>
+                            
+                            <div class="segment-card">
+                                <h3 class="segment-title">Экологичность</h3>
+                                <p>Люди будут больше обращать внимание на энергосбережение и утилизацию техники.</p>
+                            </div>
+                            
+                            <div class="segment-card">
+                                <h3 class="segment-title">Персональные предложения</h3>
+                                <p>Будут популярны сервисы подписки на технику и индивидуальные предложения.</p>
+                            </div>
+                            
+                            <div class="segment-card">
+                                <h3 class="segment-title">Умный дом</h3>
+                                <p>Будет расти спрос на устройства для умного дома, которые работают вместе.</p>
+                            </div>
+                            
+                            <div class="segment-card">
+                                <h3 class="segment-title">Российские товары</h3>
+                                <p>Будет больше российской электроники из-за политики импортозамещения.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="navigation">
+                <button class="nav-btn" id="prevBtn">Назад</button>
+                <div class="slide-counter">
+                    <span id="currentSlide">1</span> / <span id="totalSlides">7</span>
+                </div>
+                <button class="nav-btn" id="nextBtn">Вперед</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const slides = document.getElementById('slides');
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            const progress = document.getElementById('progress');
+            const currentSlideElement = document.getElementById('currentSlide');
+            const totalSlidesElement = document.getElementById('totalSlides');
+            
+            let currentSlide = 0;
+            const totalSlides = document.querySelectorAll('.slide').length;
+            
+            totalSlidesElement.textContent = totalSlides;
+            
+            // Инициализация графика на слайде 5
+            initBehaviorChart();
+            
+            function updateSlide() {
+                slides.style.transform = `translateX(-${currentSlide * 100}%)`;
+                progress.style.width = `${((currentSlide + 1) / totalSlides) * 100}%`;
+                currentSlideElement.textContent = currentSlide + 1;
+                
+                // Добавляем анимацию появления для текущего слайда
+                document.querySelectorAll('.slide').forEach((slide, index) => {
+                    if (index === currentSlide) {
+                        slide.classList.add('fade-in');
+                    } else {
+                        slide.classList.remove('fade-in');
+                    }
+                });
+            }
+            
+            function nextSlide() {
+                if (currentSlide < totalSlides - 1) {
+                    currentSlide++;
+                    updateSlide();
+                }
+            }
+            
+            function prevSlide() {
+                if (currentSlide > 0) {
+                    currentSlide--;
+                    updateSlide();
+                }
+            }
+            
+            nextBtn.addEventListener('click', nextSlide);
+            prevBtn.addEventListener('click', prevSlide);
+            
+            // Обработка клавиатуры
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'ArrowRight') {
+                    nextSlide();
+                } else if (e.key === 'ArrowLeft') {
+                    prevSlide();
+                }
+            });
+            
+            // Инициализация
+            updateSlide();
+            
+            function initBehaviorChart() {
+                const chartContainer = document.getElementById('behaviorChart');
+                chartContainer.innerHTML = '';
+                
+                const behaviors = [
+                    {label: 'Сравнение цен', value: 92},
+                    {label: 'Чтение отзывов', value: 85},
+                    {label: 'Изучение характеристик', value: 78},
+                    {label: 'Советы друзей', value: 65},
+                    {label: 'Посещение магазина', value: 58},
+                    {label: 'Покупка в рассрочку', value: 45}
+                ];
+                
+                behaviors.forEach(behavior => {
+                    const bar = document.createElement('div');
+                    bar.className = 'chart-bar';
+                    bar.style.height = `${behavior.value * 2}px`;
+                    
+                    const value = document.createElement('div');
+                    value.className = 'chart-value';
+                    value.textContent = `${behavior.value}%`;
+                    
+                    const label = document.createElement('div');
+                    label.className = 'chart-label';
+                    label.textContent = behavior.label;
+                    
+                    bar.appendChild(value);
+                    bar.appendChild(label);
+                    chartContainer.appendChild(bar);
+                });
+            }
+        });
+    </script>
+</body>
+</html>
